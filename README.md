@@ -1,1 +1,2 @@
 # Airline-delay
+The aim of this project is to perform Multiple linear regression analysis on the data of airline delay. Multiple linear regression is considered as one of the perfect technique in data analytics, and for our future prediction we are driven towards multiple linear regression. Analysis on flight delay can be done based on the features such as Origin Airport, Destination Airport, weather, days (like – holidays, weekdays), distance, and elapsed time. With the given data and statistical technique, we will predict the future outcomes. 
