@@ -1,0 +1,98 @@
+#importing the file
+data <- read.table("Project_Data1.csv",header = TRUE,sep=',')
+mydata=data[sample(nrow(data)),];
+
+#cleaning the data(removing NA values)
+data=na.omit(data)
+
+#spliting the data into training and testing data
+select.data = sample(1:nrow(data), 0.80*nrow(data));
+train.data = data[select.data,];
+test.data = data[-select.data,]
+
+#assigning the values to the attributes
+year=train.data$year
+month=train.data$month
+carrier=train.data$carrier
+carrier_name=train.data$carrier_name
+airport=train.data$airport
+airport_name=train.data$airport_name
+arr_flights=train.data$arr_flights
+arr_del=train.data$arr_del
+arr_cancelled=train.data$arr_cancelled
+arr_diverted=train.data$arr_diverted
+arr_delay=train.data$arr_delay
+carrier_delay=train.data$carrier_delay
+weather_delay=train.data$weather_delay
+nas_delay=train.data$nas_delay
+security_delay=train.data$security_delay
+late_aircraft_delay=train.data$late_aircraft_delay
+
+summary(mydata)
+summary(train.data)
+summary(test.data)
+
+#plotting the graph between arr_delay and other variables
+plot(arr_delay,weather_delay)
+line(fitted(fit),col="red")
+plot(arr_delay,carrier_delay)
+plot(arr_delay,security_delay)
+plot(arr_delay,nas_delay)
+plot(arr_delay,late_aircraft_delay)
+
+ggplot(data,aes(x=arr_delay,y=nas_delay,color=(carrier)))+geom_point()+ scale_x_log10()+scale_y_log10()+stat_smooth(method = "lm", col="red")+labs(title="scatter plot between arr_delay and nas_delay")
+ggplot(data,aes(x=arr_delay,y=weather_delay,color=(carrier)))+geom_point()+ scale_x_log10()+scale_y_log10()+stat_smooth(method = "lm", col="red")+labs(title="scatter plot between arr_delay and weather_delay")
+ggplot(data,aes(x=arr_delay,y=carrier_delay,color=(carrier)))+geom_point()+ scale_x_log10()+scale_y_log10()+stat_smooth(method = "lm", col="red")+labs(title="scatter plot between arr_delay and carrier_delay")
+ggplot(data,aes(x=arr_delay,y=security_delay,color=(carrier)))+geom_point()+ scale_x_log10()+scale_y_log10()+stat_smooth(method = "lm", col="red")+labs(title="scatter plot between arr_delay and security_delay")
+ggplot(data,aes(x=arr_delay,y=late_aircraft_delay,color=(carrier)))+geom_point()+ scale_x_log10()+scale_y_log10()+stat_smooth(method = "lm", col="red")+labs(title="scatter plot between arr_delay and late_aircraft_delay")
+
+#calculating the correlation matrix
+cor(cbind(arr_cancelled,arr_diverted,arr_delay,carrier_delay,weather_delay,nas_delay,security_delay,late_aircraft_delay))
+
+#creating model 1
+> model1=lm(arr_cancelled~arr_delay+carrier_delay+weather_delay+nas_delay+late_aircraft_delay)
+> summary(model1)
+
+#creating model 2
+> model2=lm(arr_cancelled~arr_delay+carrier_delay+weather_delay+nas_delay)
+> summary(model2)
+
+#finding best model using backward technique
+backward model
+step(model1,direction="backward", trace=T)
+
+#finding best model using forward technique
+step(base,scope=list(upper=m1, lower=~1),direction="forward", trace=F)
+
+#finding best model using both technique
+step(base,scope=list(upper=m1, lower=~1),direction="both", trace=F)
+
+#calculating the rmse value for model evaluation
+> y=predict.glm(model1,test.data)
+> y2=predict.glm(model2,test.data)
+> y=test.data[,2]
+> y2=predict.glm(model1,test.data)
+> y3=predict.glm(model2,test.data)
+> rmse2=sqrt((y-y2)%*%(y-y2))/nrow(test.data)
+> rmse2
+> rmse3=sqrt((y-y3)%*%(y-y3))/nrow(test.data)
+> rmse3
+
+#residual plots
+plot(train.data$arr_delay,rstandard(model2), main="Margin vs Residual plot")
+abline(a=0,b=0,col=2)
+
+plot(train.data$carrier_delay,rstandard(model2), main="Margin vs Residual plot")
+abline(a=0,b=0,col=2)
+
+plot(train.data$weather_delay,rstandard(model2), main="Margin vs Residual plot")
+abline(a=0,b=0,col=2)
+
+plot(train.data$nas_delay,rstandard(model2), main="Margin vs Residual plot")
+abline(a=0,b=0,col=2)
+
+#QQ plot & jarque test
+> res=rstandard(model2)
+> qqnorm(res)
+> qqline(res,col=2)
+> jarque.bera.test(res)
